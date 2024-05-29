@@ -4,6 +4,25 @@ import 'bill_calculator.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
 
+final Color primaryColor = Color(0xFFF7B32B); // Gold
+final Color secondaryColor = Color(0xFF465775); // Deep Navy Blue
+final Color coralColor = Color(0xFFFF6F59);
+final Color lightYellowColor = Color(0xFFFCF6B1);
+final Color darkSlateBlueColor = Color(0xFF2D3A4D);
+
+final List<Color> predefinedColors = [
+  Color(0xFF1F77B4),
+  Color(0xFFFF7F0E),
+  Color(0xFF2CA02C),
+  Color(0xFFD62728),
+  Color(0xFF9467BD),
+  Color(0xFF8C564B),
+  Color(0xFFE377C2),
+  Color(0xFF7F7F7F),
+  Color(0xFFBCBD22),
+  Color(0xFF17BECF),
+];
+
 void main() {
   runApp(CalculatorApp());
 }
@@ -12,7 +31,35 @@ class CalculatorApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Bill Calculator',
+      title: 'Goldi Bill Calculator',
+      theme: ThemeData(
+        primaryColor: primaryColor,
+        hintColor: secondaryColor,
+        scaffoldBackgroundColor: lightYellowColor,
+        textTheme: TextTheme(
+          bodyText1: TextStyle(color: Colors.black),
+          bodyText2: TextStyle(color: Colors.black),
+          headline1:
+              TextStyle(fontFamily: 'PlayfairDisplay', color: primaryColor),
+          button: TextStyle(color: Colors.white),
+        ),
+        buttonTheme: ButtonThemeData(
+          buttonColor: primaryColor,
+          textTheme: ButtonTextTheme.primary,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: primaryColor,
+          titleTextStyle: TextStyle(
+              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+      ),
       home: CalculatorScreen(),
     );
   }
@@ -36,21 +83,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   double total = 0.0;
 
   List<Item> items = [];
-  final List<Color> predefinedColors = [
-    Colors.red,
-    Colors.blue,
-    Colors.green,
-    Color.fromARGB(255, 232, 7, 206),
-    Colors.orange,
-    Colors.purple,
-    Colors.brown,
-    Colors.teal,
-    Colors.indigo,
-    Colors.pink,
-    Colors.cyan,
-    Colors.lime,
-    Colors.amber,
-  ];
 
   Map<String, Color> eaterColors = {};
   Map<String, Color> eaterTextColors = {};
@@ -208,9 +240,13 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     individualTotals = {for (var eater in eaters) eater: 0.0};
 
     for (var item in items) {
-      for (var eater in item.eaters) {
-        individualTotals[eater] =
-            (individualTotals[eater] ?? 0.0) + item.calculateShare(eater);
+      Map<String, double> shares = item.calculateEaterShares();
+
+      for (var entry in shares.entries) {
+        String eaterName = entry.key;
+        double share = entry.value;
+        individualTotals[eaterName] =
+            (individualTotals[eaterName] ?? 0.0) + share;
       }
     }
 
@@ -220,6 +256,9 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       double tipShare = (subtotalShare + taxShare) * tipRate;
       individualTotals[eater] = subtotalShare + taxShare + tipShare;
     }
+
+    // Recalculate total to match individual shares
+    total = individualTotals.values.reduce((sum, element) => sum + element);
   }
 
   void updateItem(int index, String name, int quantity, double totalPrice,
@@ -231,6 +270,14 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
           totalPrice: totalPrice,
           eaters: eaters);
       calculateSubtotal(); // Recalculate subtotal when items are updated
+    });
+  }
+
+  void deleteItem(int index) {
+    setState(() {
+      items.removeAt(index);
+      calculateSubtotal(); // Recalculate subtotal after item deletion
+      calculate(); // Recalculate totals after item deletion
     });
   }
 
@@ -424,7 +471,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Bill Calculator'),
+        title: Text('Goldi Bill Calculator'),
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -432,7 +479,85 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Subtotal: \$${subtotal.toStringAsFixed(2)}'),
+              Center(
+                child: SizedBox(
+                  width:
+                      double.infinity, // Makes the button take the full width
+                  child: ElevatedButton(
+                    onPressed: () => showPieChartDialog(),
+                    child: Text('Add Item'),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.0), // Added spacing for better layout
+              Text(
+                'Items:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
+              ),
+              Wrap(
+                spacing: 8.0,
+                runSpacing: 8.0,
+                children: items.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  Item item = entry.value;
+                  return GestureDetector(
+                    onTap: () => showPieChartDialog(item: item, index: index),
+                    child: Container(
+                      width: MediaQuery.of(context).size.width / 2 - 24,
+                      padding: EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                        color: lightYellowColor,
+                        border: Border.all(color: primaryColor),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                item.name,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16.0,
+                                    color: darkSlateBlueColor),
+                              ),
+                              Text(
+                                '\$${item.totalPrice.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16.0,
+                                    color: darkSlateBlueColor),
+                              )
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Eaters: ${item.eaters.join(', ')}',
+                                style: TextStyle(
+                                    fontSize: 12.0, color: Colors.black54),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => deleteItem(index),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              SizedBox(height: 16.0),
+              Text(
+                'Subtotal: \$${subtotal.toStringAsFixed(2)}',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
+              ),
+              SizedBox(height: 16.0),
               TextField(
                 controller: taxAmountController,
                 decoration: InputDecoration(
@@ -440,6 +565,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 ),
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
               ),
+              SizedBox(height: 16.0),
               TextField(
                 controller: tipAmountController,
                 decoration: InputDecoration(
@@ -453,48 +579,30 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 child: Text('Calculate Totals'),
               ),
               SizedBox(height: 16.0),
-              Text('Tax Rate: ${(taxRate * 100).toStringAsFixed(2)}%'),
-              Text('Tip Rate: ${(tipRate * 100).toStringAsFixed(2)}%'),
-              Text('Total: \$${total.toStringAsFixed(2)}'),
-              SizedBox(height: 16.0),
-              Text('Items:'),
-              ...items.asMap().entries.map((entry) {
-                int index = entry.key;
-                Item item = entry.value;
-                return Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Item Name: ${item.name}'),
-                      Text('Quantity: ${item.quantity}'),
-                      Text(
-                          'Total Price: \$${item.totalPrice.toStringAsFixed(2)}'),
-                      Text('Eaters: ${item.eaters.join(', ')}'),
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.edit),
-                            onPressed: () =>
-                                showPieChartDialog(item: item, index: index),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-              SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: () => showPieChartDialog(),
-                child: Text('Add Item'),
+              Text(
+                'Tax Rate: ${(taxRate * 100).toStringAsFixed(2)}%',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.0),
+              ),
+              Text(
+                'Tip Rate: ${(tipRate * 100).toStringAsFixed(2)}%',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.0),
+              ),
+              Text(
+                'Total: \$${total.toStringAsFixed(2)}',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
               ),
               SizedBox(height: 16.0),
-              Text('Individual Totals:'),
+              Text(
+                'Individual Totals:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
+              ),
               ...individualTotals.entries.map((entry) {
                 String eater = entry.key;
                 double total = entry.value;
-                return Text('$eater: \$${total.toStringAsFixed(2)}');
+                return Text(
+                  '$eater: \$${total.toStringAsFixed(2)}',
+                  style: TextStyle(fontSize: 16.0),
+                );
               }).toList(),
             ],
           ),

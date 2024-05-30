@@ -71,6 +71,7 @@ class CalculatorScreen extends StatefulWidget {
 }
 
 class _CalculatorScreenState extends State<CalculatorScreen> {
+
   TextEditingController taxAmountController = TextEditingController();
   TextEditingController tipAmountController = TextEditingController();
 
@@ -87,7 +88,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   Map<String, Color> eaterColors = {};
   Map<String, Color> eaterTextColors = {};
 
-  final List<String> eaters = [
+  List<String> eaters = [
     'Gamyui',
     'Jak',
     'June',
@@ -108,7 +109,25 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     tipAmountController.text = tipAmount.toStringAsFixed(2);
   }
 
+  void initializeBlankData() {
+    setState(() {
+      items = [];
+      eaters = [];
+      subtotal = 0.0;
+      taxAmount = 0.0;
+      tipAmount = 0.0;
+      subtotalPlusTax = 0.0;
+      taxRate = 0.0;
+      tipRate = 0.0;
+      total = 0.0;
+      individualTotals = {};
+      eaterColors = {};
+      eaterTextColors = {};
+    });
+  }
+
   void initializeMockData() {
+    //TODO: NEED TO DELETE WHEN FINISHED TESTING
     setState(() {
       items = [
         Item(
@@ -201,12 +220,18 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
   void assignColorsToEaters() {
     final random = Random();
-    final shuffledColors = predefinedColors..shuffle(random);
+    final availableColors = predefinedColors
+        .where((color) => !eaterColors.containsValue(color))
+        .toList();
 
-    for (int i = 0; i < eaters.length; i++) {
-      eaterColors[eaters[i]] = shuffledColors[i % predefinedColors.length];
-      eaterTextColors[eaters[i]] = getTextColorForBackground(
-          shuffledColors[i % predefinedColors.length]);
+    for (var eater in eaters) {
+      if (!eaterColors.containsKey(eater)) {
+        final color = availableColors.isNotEmpty
+            ? availableColors.removeAt(0)
+            : predefinedColors[random.nextInt(predefinedColors.length)];
+        eaterColors[eater] = color;
+        eaterTextColors[eater] = getTextColorForBackground(color);
+      }
     }
   }
 
@@ -281,6 +306,71 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     });
   }
 
+  void showEaterDialog() {
+    TextEditingController nameController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Edit Eaters'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(labelText: 'Eater Name'),
+              ),
+              SizedBox(height: 16.0),
+              Wrap(
+                spacing: 8.0,
+                runSpacing: 8.0,
+                children: eaters.map((eater) {
+                  return Chip(
+                    backgroundColor: eaterColors[eater] ?? Colors.grey,
+                    label: Text(
+                      eater,
+                      style: TextStyle(
+                          color: eaterTextColors[eater] ?? Colors.white),
+                    ),
+                    onDeleted: () {
+                      setState(() {
+                        eaters.remove(eater);
+                        eaterColors.remove(eater);
+                        eaterTextColors.remove(eater);
+                      });
+                      Navigator.of(context).pop();
+                      showEaterDialog(); // Reopen the dialog to reflect changes
+                    },
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  if (nameController.text.isNotEmpty) {
+                    eaters.add(nameController.text);
+                    assignColorsToEaters(); // Assign color to the new eater
+                  }
+                });
+                Navigator.of(context).pop();
+              },
+              child: Text('Add Eater'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void showPieChartDialog({Item? item, int? index}) {
     TextEditingController nameController =
         TextEditingController(text: item?.name ?? '');
@@ -300,10 +390,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             title: '$eater (${eaterPortions[eater]})',
             color: eaterColors[eater]!,
             titleStyle: TextStyle(
-                fontSize: 10,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: eaterTextColors[eater]),
-            radius: 80,
+            radius: 180,
           ),
         );
       }
@@ -317,15 +407,18 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
           content: SingleChildScrollView(
             child: Column(
               children: [
+                SizedBox(height: 16.0),
                 TextField(
                   controller: nameController,
                   decoration: InputDecoration(labelText: 'Item Name'),
                 ),
+                SizedBox(height: 16.0),
                 TextField(
                   controller: quantityController,
                   decoration: InputDecoration(labelText: 'Quantity'),
                   keyboardType: TextInputType.number,
                 ),
+                SizedBox(height: 16.0),
                 TextField(
                   controller: priceController,
                   decoration: InputDecoration(labelText: 'Total Price'),
@@ -333,7 +426,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 ),
                 SizedBox(height: 16),
                 SizedBox(
-                  height: 300, // Increase the size of the chart
+                  height: 400, // Increase the size of the chart
                   child: PieChart(
                     PieChartData(
                       sections: sections,
@@ -374,10 +467,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                                         title: '$e (${eaterPortions[e]})',
                                         color: eaterColors[e]!,
                                         titleStyle: TextStyle(
-                                            fontSize: 10,
+                                            fontSize: 16,
                                             fontWeight: FontWeight.bold,
                                             color: eaterTextColors[e]),
-                                        radius: 80,
+                                        radius: 180,
                                       ),
                                     );
                                   }
@@ -386,7 +479,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                             },
                           ),
                           Text('$eater (${eaterPortions[eater]})',
-                              style: TextStyle(color: eaterColors[eater])),
+                              style: TextStyle(fontSize: 16, color: Colors.black)),
                           IconButton(
                             icon: Icon(Icons.remove,
                                 size: 16, color: eaterColors[eater]),
@@ -404,10 +497,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                                           title: '$e (${eaterPortions[e]})',
                                           color: eaterColors[e]!,
                                           titleStyle: TextStyle(
-                                              fontSize: 10,
+                                              fontSize: 16,
                                               fontWeight: FontWeight.bold,
                                               color: eaterTextColors[e]),
-                                          radius: 80,
+                                          radius: 180,
                                         ),
                                       );
                                     }
@@ -467,11 +560,33 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     );
   }
 
+  //TODO: MAKE INDIVIDUAL CHECKER (NOW ONCE CHECKED, ALL BECAME TRUE)
+  bool isPaid = false;
+  
   @override
   Widget build(BuildContext context) {
+    Color getColor(Set<MaterialState> states) {
+      const Set<MaterialState> interactiveStates = <MaterialState>{
+        MaterialState.pressed,
+        MaterialState.hovered,
+        MaterialState.focused,
+      };
+      if (states.any(interactiveStates.contains)) {
+        return Colors.blue;
+      }
+      return Colors.red;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Goldi Bill Calculator'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: initializeMockData,
+            //onPressed: initializeBlankData
+          ),
+        ],
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -481,15 +596,18 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             children: [
               Center(
                 child: SizedBox(
-                  width:
-                      double.infinity, // Makes the button take the full width
+                  width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () => showPieChartDialog(),
-                    child: Text('Add Item'),
+                    child: Text('Add Item',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16.0,
+                        )),
                   ),
                 ),
               ),
-              SizedBox(height: 16.0), // Added spacing for better layout
+              SizedBox(height: 16.0),
               Text(
                 'Items:',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
@@ -581,15 +699,45 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
               SizedBox(height: 16.0),
               Text(
                 'Tax Rate: ${(taxRate * 100).toStringAsFixed(2)}%',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.0),
+                style: TextStyle(fontWeight: FontWeight.w100, fontSize: 16.0),
               ),
               Text(
                 'Tip Rate: ${(tipRate * 100).toStringAsFixed(2)}%',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.0),
+                style: TextStyle(fontWeight: FontWeight.w100, fontSize: 16.0),
               ),
               Text(
                 'Total: \$${total.toStringAsFixed(2)}',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
+              ),
+              GestureDetector(
+                onTap: showEaterDialog,
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    color: Color(0xFF465775), // Navy blue color
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '(Eaters)',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.0,
+                        ),
+                      ),
+                      Text(
+                        '${eaters.length}',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
               SizedBox(height: 16.0),
               Text(
@@ -599,9 +747,25 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
               ...individualTotals.entries.map((entry) {
                 String eater = entry.key;
                 double total = entry.value;
-                return Text(
-                  '$eater: \$${total.toStringAsFixed(2)}',
-                  style: TextStyle(fontSize: 16.0),
+                return Row(
+                  children: [
+                    //TODO: MAKE INDIVIDUAL CHECKER (NOW ONCE CHECKED, ALL BECAME TRUE)
+                    Checkbox(
+                      checkColor: Colors.white,
+                      fillColor: MaterialStateProperty.resolveWith(getColor),
+                      value: isPaid,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          isPaid = value!;
+                        });
+                      },
+                    ),
+                    Text(
+                      '$eater: \$${total.toStringAsFixed(2)}',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16.0),
+                    )
+                  ],
                 );
               }).toList(),
             ],

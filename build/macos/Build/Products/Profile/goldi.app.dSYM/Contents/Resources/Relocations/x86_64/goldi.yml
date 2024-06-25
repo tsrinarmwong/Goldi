@@ -1,0 +1,19 @@
+---
+triple:          'x86_64-apple-darwin'
+binary-path:     '/Users/thitipunsrinarmwong/Documents/CODING/Flutter/goldi/build/macos/Build/Products/Profile/goldi.app/Contents/MacOS/goldi'
+relocations:
+  - { offsetInCU: 0x27, offset: 0xC8EF1, size: 0x8, addend: 0x0, symName: '_$s5goldi17MainFlutterWindowC12awakeFromNibyyFTo', symObjAddr: 0x0, symBinAddr: 0x1000015D0, symSize: 0xF0 }
+  - { offsetInCU: 0x87, offset: 0xC8F51, size: 0x8, addend: 0x0, symName: '_$s5goldi17MainFlutterWindowC12awakeFromNibyyFTo', symObjAddr: 0x0, symBinAddr: 0x1000015D0, symSize: 0xF0 }
+  - { offsetInCU: 0x129, offset: 0xC8FF3, size: 0x8, addend: 0x0, symName: '_$s5goldi17MainFlutterWindowC11contentRect9styleMask7backing5deferACSo6CGRectV_So013NSWindowStyleH0VSo18NSBackingStoreTypeVSbtcfcTo', symObjAddr: 0xF0, symBinAddr: 0x1000016C0, symSize: 0x80 }
+  - { offsetInCU: 0x189, offset: 0xC9053, size: 0x8, addend: 0x0, symName: '_$s5goldi17MainFlutterWindowCfD', symObjAddr: 0x170, symBinAddr: 0x100001740, symSize: 0x30 }
+  - { offsetInCU: 0x1B7, offset: 0xC9081, size: 0x8, addend: 0x0, symName: '_$s5goldi17MainFlutterWindowCMa', symObjAddr: 0x1A0, symBinAddr: 0x100001770, symSize: 0x14 }
+  - { offsetInCU: 0x27, offset: 0xC926A, size: 0x8, addend: 0x0, symName: '_$s5goldi11AppDelegateC47applicationShouldTerminateAfterLastWindowClosedySbSo13NSApplicationCFTo', symObjAddr: 0x0, symBinAddr: 0x100001790, symSize: 0x10 }
+  - { offsetInCU: 0x4B, offset: 0xC928E, size: 0x8, addend: 0x0, symName: '_$s5goldi11AppDelegateC47applicationShouldTerminateAfterLastWindowClosedySbSo13NSApplicationCFTo', symObjAddr: 0x0, symBinAddr: 0x100001790, symSize: 0x10 }
+  - { offsetInCU: 0x85, offset: 0xC92C8, size: 0x8, addend: 0x0, symName: '_$s5goldi11AppDelegateCACycfcTo', symObjAddr: 0x10, symBinAddr: 0x1000017A0, symSize: 0x30 }
+  - { offsetInCU: 0xC0, offset: 0xC9303, size: 0x8, addend: 0x0, symName: '_$s5goldi11AppDelegateCfD', symObjAddr: 0x40, symBinAddr: 0x1000017D0, symSize: 0x30 }
+  - { offsetInCU: 0xEE, offset: 0xC9331, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x70, symBinAddr: 0x100001800, symSize: 0x10 }
+  - { offsetInCU: 0x10C, offset: 0xC934F, size: 0x8, addend: 0x0, symName: '_$s5goldi11AppDelegateCMa', symObjAddr: 0x80, symBinAddr: 0x100001810, symSize: 0x14 }
+  - { offsetInCU: 0x2B, offset: 0xC9479, size: 0x8, addend: 0x0, symName: '_$s5goldi19ResourceBundleClass33_AF3569BEBE95C587D397DF45C44C7AE7LLCfD', symObjAddr: 0x0, symBinAddr: 0x100001830, symSize: 0x20 }
+  - { offsetInCU: 0x55, offset: 0xC94A3, size: 0x8, addend: 0x0, symName: '_$s5goldi19ResourceBundleClass33_AF3569BEBE95C587D397DF45C44C7AE7LLCfD', symObjAddr: 0x0, symBinAddr: 0x100001830, symSize: 0x20 }
+  - { offsetInCU: 0x84, offset: 0xC94D2, size: 0x8, addend: 0x0, symName: '_$s5goldi19ResourceBundleClass33_AF3569BEBE95C587D397DF45C44C7AE7LLCMa', symObjAddr: 0x20, symBinAddr: 0x100001850, symSize: 0x14 }
+...

@@ -2,17 +2,15 @@
 My first Flutter project! https://tsrinarmwong.github.io/Goldi/
 Third Update (7/27)
 
-<img width="200" alt="image" src="https://github.com/user-attachments/assets/dd20c8cc-d026-45fd-ad2a-792c179fa8f7">
+
 <img width="200" alt="image" src="https://github.com/user-attachments/assets/ff556d87-4cb9-4d00-a935-acdd8ac5e4e7">
 <img width="200" alt="image" src="https://github.com/user-attachments/assets/b4d320a4-f6be-4994-b64a-e9de4a5b06e0">          
-
-
 <img width="200" alt="image" src="https://github.com/user-attachments/assets/abb0e082-921e-41f7-a544-05f9a26eef6e">
+<img width="200" alt="image" src="https://github.com/user-attachments/assets/4d5fa13f-1a32-45b0-baa5-efa3bf253918">
+<img width="200" alt="image" src="https://github.com/user-attachments/assets/dd20c8cc-d026-45fd-ad2a-792c179fa8f7">
 <img width="200" alt="image" src="https://github.com/user-attachments/assets/e23d87d5-df04-422c-b64b-030b2912ada7">
 <img width="200" alt="image" src="https://github.com/user-attachments/assets/6360d8c2-914b-4721-afca-d9fa031d57a5">
-<img width="200" alt="image" src="https://github.com/user-attachments/assets/4d5fa13f-1a32-45b0-baa5-efa3bf253918">
 <img width="200" alt="image" src="https://github.com/user-attachments/assets/637b6d2c-e412-41d5-9d80-8c1b88a76c83">
-
 
 
 Second update (6/30)

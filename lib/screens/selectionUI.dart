@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'calculatorUI.dart';
-import 'receipt_captureUI.dart';
+// import 'receipt_captureUI.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 
 class SelectionScreen extends StatelessWidget {
@@ -40,19 +40,19 @@ class SelectionScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => CalculatorScreen()),
                   );
                 },
-                child: Text('Manual Receipt Filling', style: TextStyle(fontSize: 20)),
+                child: Text('Start Receipt Filling', style: TextStyle(fontSize: 20)),
               ),
-              SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ReceiptCaptureScreen()),
-                  );
-                },
-                child: Text('Capture Receipt by Camera', style: TextStyle(fontSize: 20)),
-              ),
+              // SizedBox(height: 16.0),
+              // ElevatedButton(
+              //   onPressed: () {
+              //     Navigator.push(
+              //       context,
+              //       MaterialPageRoute(
+              //           builder: (context) => ReceiptCaptureScreen()),
+              //     );
+              //   },
+              //   child: Text('Capture Receipt by Camera', style: TextStyle(fontSize: 20)),
+              // ),
             ],
           ),
         ),

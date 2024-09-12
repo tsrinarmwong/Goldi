@@ -10,4 +10,8 @@ class BillCalculator {
   static double calculateTipRate(double subtotalPlusTax, double tipAmount) {
     return tipAmount / subtotalPlusTax;
   }
+
+  static double calculateTipRateSameTime(double subtotal, double tipAmount){
+    return tipAmount / subtotal;
+  }
 }

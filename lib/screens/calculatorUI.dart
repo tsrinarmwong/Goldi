@@ -35,9 +35,7 @@ class CalculatorScreen extends StatefulWidget {
 
 class _CalculatorScreenState extends State<CalculatorScreen> {
   List<Item> items = [];
-  List<String> eaters = [
-    'Gamyui', 'Jak', 'June', 'Jiannan', 'Itim', 'Gammy', 'Kevin'
-  ];
+  List<String> eaters = [];
   Map<String, Color> eaterColors = {};
   Map<String, Color> eaterTextColors = {};
   TextEditingController taxAmountController = TextEditingController();
@@ -59,117 +57,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     if (widget.initialItems.isNotEmpty) {
       items = widget.initialItems;
     } else {
-      initializeBlankData();
     }
     calculateSubtotal();
     taxAmountController.text = taxAmount.toStringAsFixed(2);
     tipAmountController.text = tipAmount.toStringAsFixed(2);
-  }
-
-  void initializeBlankData() { // Change this
-    setState(() {
-      items = [
-        Item(
-            name: '387 Vacheron',
-            // quantity: 1,
-            totalPrice: 135.00,
-            eaters: ['Gamyui', 'Jak', 'June', 'Jiannan', 'Itim']),
-        Item(
-            name: 'Seasonal Nigiri',
-            // quantity: 1,
-            totalPrice: 75.00,
-            eaters: eaters),
-        Item(
-            name: 'Seasonal Sashimi',
-            // quantity: 1,
-            totalPrice: 85.00,
-            eaters: eaters),
-        Item(
-            name: 'R - Momomaki',
-            // quantity: 1,
-            totalPrice: 24.00,
-            eaters: eaters),
-        Item(
-            name: 'Hokkaido Ngiri',
-            // quantity: 1,
-            totalPrice: 16.00,
-            eaters: ['Itim']),
-        Item(
-            name: 'Forbidden Murasaki',
-            // quantity: 1,
-            totalPrice: 10.00,
-            eaters: ['Gammy']),
-        Item(
-            name: 'Asahi Can',
-            // quantity: 1,
-            totalPrice: 9.00,
-            eaters: ['Kevin']),
-        Item(name: 'Edamame', 
-        // quantity: 1, 
-        totalPrice: 8.00, eaters: eaters),
-        Item(
-            name: 'Shishito Kushi (2 @10.00)',
-            // quantity: 2,
-            totalPrice: 20.00,
-            eaters: eaters),
-        Item(
-            name: 'Sliders (4 @16.00)',
-            // quantity: 4,
-            totalPrice: 64.00,
-            eaters: eaters),
-        Item(
-            name: 'Hotate Batayaki (2 @20.00)',
-            // quantity: 2,
-            totalPrice: 40.00,
-            eaters: eaters),
-        Item(
-            name: 'Extra Hotate (2 @7.00)',
-            // quantity: 2,
-            totalPrice: 14.00,
-            eaters: eaters),
-        Item(
-            name: 'R-Negi Hamachi',
-            // quantity: 1,
-            totalPrice: 14.00,
-            eaters: eaters),
-        Item(
-            name: 'GL Dry Mountain',
-            // quantity: 1,
-            totalPrice: 14.00,
-            eaters: eaters),
-        Item(
-            name: 'R - Negi Toro',
-            // quantity: 1,
-            totalPrice: 16.00,
-            eaters: eaters),
-        Item(
-            name: 'R-ShioKoji Sake',
-            // quantity: 1,
-            totalPrice: 14.00,
-            eaters: ['Kevin']),
-        Item(
-            name: 'R - Karai Tuna',
-            // quantity: 1,
-            totalPrice: 16.00,
-            eaters: eaters),
-      ];
-      eaters = [
-        'Gamyui', 'Jak', 'June', 'Jiannan', 'Itim', 'Gammy', 'Kevin'
-      ];
-      subtotal = 0.0;
-
-      taxAmount = 67.45;
-      tipAmount = 115.46;
-      subtotalPlusTax = 0.0;
-      taxRate = 0.0;
-      tipRate = 0.0;
-      total = 0.0;
-      individualTotals = {};
-      eaterColors = {};
-      eaterTextColors = {};
-      paymentStatus = {for (var eater in eaters) eater: false};
-      assignColorsToEaters();
-    });
   }
 
   void assignColorsToEaters() {
@@ -573,16 +464,16 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Goldi Bill Calculator'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: initializeBlankData,
-          ),
-          // IconButton(
-          //   icon: Icon(Icons.share),
-          //   onPressed: exportReceipt,
-          // ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: Icon(Icons.refresh),
+        //     onPressed: initializeBlankData,
+        //   ),
+        //   // IconButton(
+        //   //   icon: Icon(Icons.share),
+        //   //   onPressed: exportReceipt,
+        //   // ),
+        // ],
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),

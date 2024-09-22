@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 // import 'package:goldi/screens/receipt_captureUI.dart';
-import 'package:goldi/screens/selectionUI.dart';
+import 'package:goldi/screens/HomeSelectionScreen.dart';
 
 final Color primaryColor = Color(0xFFF7B32B); // Gold
 final Color secondaryColor = Color(0xFF465775); // Deep Navy Blue

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../processors/item.dart'; // Import the Item class
 import '../processors/bill_calculator.dart';
-import 'package:fl_chart/fl_chart.dart';
+import 'ItemFormScreen.dart';
 import 'dart:math';
 import 'package:share/share.dart';
 
@@ -38,6 +38,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   List<String> eaters = [];
   Map<String, Color> eaterColors = {};
   Map<String, Color> eaterTextColors = {};
+  Map<String, bool> showItems =
+      {}; // To control visibility of items for each eater
   TextEditingController taxAmountController = TextEditingController();
   TextEditingController tipAmountController = TextEditingController();
   double subtotal = 0.0;
@@ -56,11 +58,28 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     assignColorsToEaters();
     if (widget.initialItems.isNotEmpty) {
       items = widget.initialItems;
-    } else {
     }
     calculateSubtotal();
-    taxAmountController.text = taxAmount.toStringAsFixed(2);
-    tipAmountController.text = tipAmount.toStringAsFixed(2);
+
+    // No need to prefill the text fields with 0.0 as we will use hintText
+  }
+
+  void initializeBlankData() {
+    setState(() {
+      items = []; // Reset the items list
+      eaters = []; // Reset the eaters list
+      individualTotals = {}; // Clear the individual totals
+      taxAmount = 0.0; // Reset tax amount
+      tipAmount = 0.0; // Reset tip amount
+      taxRate = 0.0; // Reset tax rate
+      tipRate = 0.0; // Reset tip rate
+      total = 0.0; // Reset total
+      subtotal = 0.0; // Reset subtotal
+      subtotalPlusTax = 0.0; // Reset subtotalPlusTax
+      taxAmountController.clear(); // Clear the tax amount field
+      tipAmountController.clear(); // Clear the tip amount field
+      paymentStatus.clear(); // Clear payment status for all eaters
+    });
   }
 
   void assignColorsToEaters() {
@@ -81,34 +100,22 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     }
   }
 
-  String generateReceiptContent() {
-    StringBuffer receiptBuffer = StringBuffer();
-    receiptBuffer.writeln("Goldi Bill Calculator Receipt\n");
-    receiptBuffer.writeln("Items:");
-
+  List<String> getItemsForEater(String eater) {
+    // Get list of items the eater has consumed
+    List<String> itemsConsumed = [];
     for (var item in items) {
-      receiptBuffer
-          .writeln("${item.name} (\$${item.totalPrice.toStringAsFixed(2)})");
-      receiptBuffer.writeln("  Eaters: ${item.eaters.join(', ')}");
+      if (item.eaters.contains(eater)) {
+        itemsConsumed
+            .add("${item.name} (\$${item.totalPrice.toStringAsFixed(2)})");
+      }
     }
-
-    receiptBuffer.writeln("\nSubtotal: \$${subtotal.toStringAsFixed(2)}");
-    receiptBuffer.writeln("Tax Amount: \$${taxAmount.toStringAsFixed(2)}");
-    receiptBuffer.writeln("Tip Amount: \$${tipAmount.toStringAsFixed(2)}");
-    receiptBuffer.writeln("Total: \$${total.toStringAsFixed(2)}");
-
-    receiptBuffer.writeln("\nIndividual Totals:");
-    for (var entry in individualTotals.entries) {
-      receiptBuffer
-          .writeln("${entry.key}: \$${entry.value.toStringAsFixed(2)}");
-    }
-
-    return receiptBuffer.toString();
+    return itemsConsumed;
   }
 
-  void exportReceipt() {
-    String receiptContent = generateReceiptContent();
-    Share.share(receiptContent, subject: 'Goldi Bill Calculator Receipt');
+  void toggleShowItems(String eater) {
+    setState(() {
+      showItems[eater] = !(showItems[eater] ?? false); // Toggle visibility
+    });
   }
 
   Color getTextColorForBackground(Color backgroundColor) {
@@ -165,10 +172,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   void updateItem(int index, String name, int quantity, double totalPrice,
       List<String> eaters) {
     setState(() {
-      items[index] = Item(
-          name: name,
-          totalPrice: totalPrice,
-          eaters: eaters);
+      items[index] = Item(name: name, totalPrice: totalPrice, eaters: eaters);
       calculateSubtotal(); // Recalculate subtotal when items are updated
     });
   }
@@ -246,201 +250,29 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     );
   }
 
-  void showPieChartDialog({Item? item, int? index}) {
-    TextEditingController nameController =
-        TextEditingController(text: item?.name ?? '');
-    TextEditingController priceController =
-        TextEditingController(text: item?.totalPrice.toString() ?? '0.0');
-    List<PieChartSectionData> sections = [];
-    Map<String, int> eaterPortions = {};
+  void openItemForm({Item? item, int? index}) async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ItemFormPage(
+          item: item,
+          index: index,
+          eaters: eaters,
+          eaterColors: eaterColors,
+          eaterTextColors: eaterTextColors,
+        ),
+      ),
+    );
 
-    for (var eater in eaters) {
-      eaterPortions[eater] = item?.eaters.where((e) => e == eater).length ?? 0;
-      if (eaterPortions[eater]! > 0) {
-        sections.add(
-          PieChartSectionData(
-            value: eaterPortions[eater]!.toDouble(),
-            title: '$eater (${eaterPortions[eater]})',
-            color: eaterColors[eater]!,
-            titleStyle: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: eaterTextColors[eater]),
-            radius: 120,
-          ),
-        );
-      }
-    }
-
-    void updateSections() {
+    if (result != null && result is Item) {
       setState(() {
-        sections.clear();
-        for (var e in eaters) {
-          if (eaterPortions[e]! > 0) {
-            sections.add(
-              PieChartSectionData(
-                value: eaterPortions[e]!.toDouble(),
-                title: '$e (${eaterPortions[e]})',
-                color: eaterColors[e]!,
-                titleStyle: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: eaterTextColors[e]),
-                radius: 120,
-              ),
-            );
-          }
+        if (index == null) {
+          items.add(result); // Add new item
+        } else {
+          items[index] = result; // Update existing item
         }
+        calculateSubtotal(); // Recalculate subtotal
       });
     }
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: Text(item == null ? 'Add Item' : 'Edit Item'),
-              content: Container(
-                width: MediaQuery.of(context).size.width * 0.8,
-                height: MediaQuery.of(context).size.height * 0.8,
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: nameController,
-                        decoration: InputDecoration(labelText: 'Item Name'),
-                      ),
-                      SizedBox(height: 8.0),
-                      // TextField(
-                      //   decoration: InputDecoration(labelText: 'Quantity'),
-                      //   keyboardType: TextInputType.number,
-                      // ),
-                      SizedBox(height: 8.0),
-                      TextField(
-                        controller: priceController,
-                        decoration: InputDecoration(labelText: 'Total Price'),
-                        keyboardType:
-                            TextInputType.numberWithOptions(decimal: true),
-                      ),
-                      SizedBox(height: 8.0),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            for (var eater in eaters) {
-                              eaterPortions[eater] = 1;
-                            }
-                            updateSections();
-                          });
-                        },
-                        child: Text('Equal Share'),
-                      ),
-                      Wrap(
-                        children: eaters.map((eater) {
-                          return Container(
-                            margin: EdgeInsets.all(2.0),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 4.0, vertical: 2.0),
-                            decoration: BoxDecoration(
-                              color: eaterColors[eater]!.withOpacity(0.2),
-                              border: Border.all(
-                                  color: eaterColors[eater]!, width: 1.0),
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: Icon(Icons.add,
-                                      size: 12, color: eaterColors[eater]),
-                                  onPressed: () {
-                                    setState(() {
-                                      eaterPortions[eater] =
-                                          (eaterPortions[eater] ?? 0) + 1;
-                                      updateSections();
-                                    });
-                                  },
-                                ),
-                                Text('$eater (${eaterPortions[eater]})',
-                                    style: TextStyle(
-                                        fontSize: 12, color: Colors.black)),
-                                IconButton(
-                                  icon: Icon(Icons.remove,
-                                      size: 12, color: eaterColors[eater]),
-                                  onPressed: () {
-                                    setState(() {
-                                      if (eaterPortions[eater]! > 0) {
-                                        eaterPortions[eater] =
-                                            (eaterPortions[eater] ?? 0) - 1;
-                                        updateSections();
-                                      }
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      SizedBox(height: 8.0),
-                      SizedBox(
-                        height: MediaQuery.of(context).size.width * 0.6,
-                        child: PieChart(
-                          PieChartData(
-                            sections: sections,
-                            sectionsSpace: 2,
-                            centerSpaceRadius: 0,
-                            borderData: FlBorderData(show: false),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      if (item == null) {
-                        items.add(Item(
-                          name: nameController.text,
-                          totalPrice:
-                              double.tryParse(priceController.text) ?? 0.0,
-                          eaters: eaterPortions.entries
-                              .expand((entry) =>
-                                  List<String>.filled(entry.value, entry.key))
-                              .toList(),
-                        ));
-                      } else if (index != null) {
-                        items[index] = Item(
-                          name: nameController.text,
-                          totalPrice:
-                              double.tryParse(priceController.text) ?? 0.0,
-                          eaters: eaterPortions.entries
-                              .expand((entry) =>
-                                  List<String>.filled(entry.value, entry.key))
-                              .toList(),
-                        );
-                      }
-                      calculateSubtotal();
-                      Navigator.of(context).pop();
-                    });
-                  },
-                  child: Text(item == null ? 'Add' : 'Save'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
   }
 
   @override
@@ -455,25 +287,20 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         return Colors.orange;
       }
       if (states.contains(MaterialState.selected)) {
-    return Colors.green;
-  }
+        return Colors.green;
+      }
       return Colors.red;
     }
-
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Goldi Bill Calculator'),
-        // actions: [
-        //   IconButton(
-        //     icon: Icon(Icons.refresh),
-        //     onPressed: initializeBlankData,
-        //   ),
-        //   // IconButton(
-        //   //   icon: Icon(Icons.share),
-        //   //   onPressed: exportReceipt,
-        //   // ),
-        // ],
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: initializeBlankData,
+          ),
+        ],
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -518,7 +345,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () => showPieChartDialog(),
+                    onPressed: () => openItemForm(),
                     child: Text('Add Item',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -539,7 +366,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                   int index = entry.key;
                   Item item = entry.value;
                   return GestureDetector(
-                    onTap: () => showPieChartDialog(item: item, index: index),
+                    onTap: () => openItemForm(item: item, index: index),
                     child: Container(
                       width: MediaQuery.of(context).size.width -
                           32, // Adjust width to fit one item per row
@@ -597,18 +424,22 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
               ),
               SizedBox(height: 16.0),
+              // Tax Amount Field
               TextField(
                 controller: taxAmountController,
                 decoration: InputDecoration(
                   labelText: 'Tax Amount',
+                  hintText: '0.0', // Use hintText instead of pre-filled text
                 ),
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
               ),
               SizedBox(height: 16.0),
+              // Tip Amount Field
               TextField(
                 controller: tipAmountController,
                 decoration: InputDecoration(
                   labelText: 'Tip Amount',
+                  hintText: '0.0', // Use hintText instead of pre-filled text
                 ),
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
               ),
@@ -637,23 +468,51 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
               ...individualTotals.entries.map((entry) {
                 String eater = entry.key;
                 double total = entry.value;
-                return Row(
+                List<String> itemsEaten = getItemsForEater(eater);
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Checkbox(
-                      checkColor: Colors.white,
-                      fillColor: MaterialStateProperty.resolveWith(getColor),
-                      value: paymentStatus[eater],
-                      onChanged: (bool? value) {
-                        setState(() {
-                          paymentStatus[eater] = value ?? false;
-                        });
-                      },
+                    Row(
+                      children: [
+                        Checkbox(
+                          checkColor: Colors.white,
+                          fillColor:
+                              MaterialStateProperty.resolveWith(getColor),
+                          value: paymentStatus[eater],
+                          onChanged: (bool? value) {
+                            setState(() {
+                              paymentStatus[eater] = value ?? false;
+                            });
+                          },
+                        ),
+                        Text(
+                          '$eater: \$${total.toStringAsFixed(2)}',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16.0),
+                        ),
+                        IconButton(
+                          icon: Icon(showItems[eater] ?? false
+                              ? Icons.arrow_drop_up
+                              : Icons.arrow_drop_down),
+                          onPressed: () => toggleShowItems(eater),
+                        ),
+                      ],
                     ),
-                    Text(
-                      '$eater: \$${total.toStringAsFixed(2)}',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16.0),
-                    )
+                    // Show the list of items the eater consumed
+                    if (showItems[eater] ?? false)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 32.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: itemsEaten
+                              .map((item) => Text(
+                                    '- $item',
+                                    style: TextStyle(fontSize: 14),
+                                  ))
+                              .toList(),
+                        ),
+                      ),
                   ],
                 );
               }).toList(),

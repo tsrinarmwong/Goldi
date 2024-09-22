@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'calculatorUI.dart';
+import 'CalculatorScreen.dart';
 // import 'receipt_captureUI.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 

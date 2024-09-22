@@ -1,0 +1,1 @@
+ /Users/t.snw/Documents/CODING/Goldi/.dart_tool/flutter_build/16d5cfb54813292481b71ef0b4a67bd8/native_assets.yaml: 
